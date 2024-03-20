@@ -2,12 +2,10 @@ from flask import Flask
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_login import LoginManager
 import os
 
 db = SQLAlchemy()
 mail = Mail()
-# login_manager = LoginManager()
 
 DB_NAME = 'test'
 
@@ -26,7 +24,6 @@ def create_app():
         
     db.init_app(app)
     mail.init_app(app)
-    # login_manager.init_app(app)
     
     from .views import views
     from .auth import auth

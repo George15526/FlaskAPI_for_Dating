@@ -12,26 +12,35 @@ auth = Blueprint('auth', __name__)
 # 登入函式
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    d = {}
+    
     if request.method == 'POST':
+        data = request.json
         
-        login_username = request.form['username']
-        login_password = request.form['password']
-        
-        user = Users.query.filter_by(username=login_username).first()
+        login_email = data['email']
+        login_password = data['password']
+        user = Users.query.filter_by(email=login_email).first()
         
         if user.is_confirmed:
         
             if check_password(user, login_password):
-                session['username'] = login_username
+                session['email'] = login_email
                 flash('Login Success', 'success')
-                return redirect(url_for('/home'))
+                print('success')
+                userId = str(user.id)
+                # online: False => True
+                user.online = True
+                db.session.add(user)
+                db.session.flush()
+                db.session.commit()
+                
+                return jsonify({'userId': userId})
             else:
                 flash('Login Failed, Please Check.', 'danger')
-                
+                return jsonify(['Login Failed, Please Check.'])
+                    
         else:
-            return redirect(url_for("auth.resend_confirmation", username=login_username))
-            
-    return render_template('')
+            return redirect(url_for("auth.resend_confirmation", username=user.username))
 
 # 註冊函式，註冊完成將會發送驗證信至註冊信箱中
 @auth.route('/register', methods=['GET', 'POST'])
@@ -40,7 +49,6 @@ def register():
     
     if request.method == 'POST':
         data = request.json
-        print(data)
         
         username = data['username']
         gender = data['gender']
@@ -73,7 +81,7 @@ def register():
             
             send_email(email, subject, html)
             
-            return jsonify(['Register Success'])
+            return jsonify({'Message': 'Register Success'})
         
         else:
             return jsonify(['username already exist'])               
