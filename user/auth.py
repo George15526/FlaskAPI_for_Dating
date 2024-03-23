@@ -43,7 +43,7 @@ def login():
             return redirect(url_for("auth.resend_confirmation", username=user.username))
 
 # 註冊函式，註冊完成將會發送驗證信至註冊信箱中
-@auth.route('/register', methods=['GET', 'POST'])
+@auth.route('/register2', methods=['GET', 'POST'])
 def register():
     d = {}
     
@@ -54,6 +54,8 @@ def register():
         gender = data['gender']
         email = data['email']
         password = data['password']
+        
+        print(username)
                 
         user = Users.query.filter_by(email=email).first()
         

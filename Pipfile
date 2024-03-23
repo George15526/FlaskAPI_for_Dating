@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyopenssl = "*"
+flask = "*"
+flask-sqlalchemy = "*"
+flask-mail = "*"
+werkzeug = "*"
+sqlalchemy = "*"
+pymysql = "*"
+itsdangerous = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
