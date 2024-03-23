@@ -6,7 +6,10 @@ This is back-end code, separate from "Dating" project.
 
 ### SSL GET commands
 
+This is the method of create the SSL certificate for testing:
+
 * Step1: Build the ssl.conf in your project
+
 * Step2: Run this command to build the server.key and server.crt
 ```
 openssl req -x509 -new -nodes -sha256 -utf8 -days 3650 -newkey rsa:2048 -keyout server.key -out server.crt -config ssl.conf
