@@ -3,7 +3,7 @@ from . import db
 from .models import Users
 from .__init__ import set_password, check_password
 from .email import send_email
-from user.token import generate_token, confirm_token
+from user.token import generate_token, confirm_token, generate_OTP
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -104,6 +104,7 @@ def delete_datas():
             user_id = int(i)
             delete_user = Users.query.filter_by(id=user_id).first()
             db.session.delete(delete_user)
+            db.session.flush()
             db.session.commit()
         
         if request.values.get("select_all") == "select_all":
@@ -126,6 +127,7 @@ def confirm_email(token):
         user.is_confirmed = True
         user.confirmed_on = datetime.now()
         db.session.add(user)
+        db.session.flush()
         db.session.commit()
         response = make_response("You have confirmed your account. Please return login page.", "success")
         return response
@@ -153,3 +155,45 @@ def resend_confirmation(username):
         flash("A new confirmation email has been sent.", "success")
     
     return render_template("inactive.html")
+
+@auth.route('/forgetPassword')
+def forgetPassword():
+    if request.method == 'POST':
+        data = request.json
+        email = data['email']
+        user = Users.query.filter_by(email=email).first()
+        if user:
+            arr = generate_OTP()
+            OTP_codes = ''
+            for i in arr:
+                OTP_codes += str(i)
+            user.otp = OTP_codes
+            db.session.add(user)
+            db.session.flush()
+            db.session.commit()
+            html = render_template("email_for_OTP.html", OTP_codes=OTP_codes)
+            subject = "Your OTP codes here"
+            send_email(email, subject, html)
+            
+            return redirect(url_for('auth.verifyOTP', user))
+    
+@auth.route('/verifyOTP/<user>')
+def verifyOTP(user):
+    if request.method == 'POST':
+        data = request.json
+        OTPcode_get_from_flutter = data['otp']
+        for i in range(4):
+            if OTPcode_get_from_flutter[i] != user.otp[i]:
+                return jsonify({'Message': 'verify failed'})
+        return redirect(url_for('auth.passwordReset', user=user))
+    
+@auth.route('/passwordReset/<user>')
+def passwordReset(user):
+    if request.method == 'POST':
+        data = request.json
+        new_password = data['newPassword']
+        if user:
+            user.password_hashed = set_password(new_password)
+            db.session.add(user)
+            db.session.flush()
+            db.session.commit()
